@@ -1,0 +1,36 @@
+name: tfsec
+
+on:
+  push:
+    branches:
+      - prod
+      - staging
+      - dev
+  pull_request:
+    branches:
+      - prod
+      - staging
+      - dev
+
+jobs:
+  tfsec:
+    name: tfsec scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install tfsec
+        run: |
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+      - name: Run tfsec and save results
+        run: |
+          mkdir -p results
+          tfsec . --format sarif > results/tfsec.sarif
+
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results/tfsec.sarif

@@ -12,6 +12,10 @@ on:
       - staging
       - dev
 
+permissions:
+  security-events: write  # Required for SARIF upload to work
+  contents: read
+
 jobs:
   tfsec:
     name: Run tfsec static analysis

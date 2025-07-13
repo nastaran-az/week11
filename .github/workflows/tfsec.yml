@@ -1,0 +1,40 @@
+name: tfsec
+
+on:
+  push:
+    branches:
+      - prod
+      - staging
+      - dev
+  pull_request:
+    branches:
+      - prod
+      - staging
+      - dev
+
+permissions:
+  security-events: write  # Required for SARIF upload to work
+  contents: read
+
+jobs:
+  tfsec:
+    name: Run tfsec static analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install tfsec
+        run: |
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+      - name: Run tfsec and save results
+        run: |
+          mkdir -p results
+          tfsec . --format sarif > results/tfsec.sarif || true
+
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results/tfsec.sarif
